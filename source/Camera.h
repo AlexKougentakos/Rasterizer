@@ -20,7 +20,7 @@ namespace dae
 
 
 		Vector3 origin{};
-		float fovAngle{90.f};
+		float fovAngle{60.f};
 		float fov{ tanf((fovAngle * TO_RADIANS) / 2.f) };
 
 		Vector3 forward{Vector3::UnitZ};
@@ -33,7 +33,7 @@ namespace dae
 		Matrix invViewMatrix{};
 		Matrix viewMatrix{};
 
-		void Initialize(float _fovAngle = 90.f, Vector3 _origin = {0.f,0.f,0.f})
+		void Initialize(float _fovAngle = 60.f, Vector3 _origin = {0.f,0.f,-10.f})
 		{
 			fovAngle = _fovAngle;
 			fov = tanf((fovAngle * TO_RADIANS) / 2.f);
@@ -46,6 +46,19 @@ namespace dae
 			//TODO W1
 			//ONB => invViewMatrix
 			//Inverse(ONB) => ViewMatrix
+
+			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
+			up = Vector3::Cross(forward, right);
+
+			invViewMatrix = Matrix
+			{
+				right,
+				up,
+				forward,
+				origin
+			};
+
+			viewMatrix = invViewMatrix.Inverse();
 
 			//ViewMatrix => Matrix::CreateLookAtLH(...) [not implemented yet]
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixlookatlh
@@ -61,10 +74,53 @@ namespace dae
 
 		void Update(Timer* pTimer)
 		{
+			//Camera Update Logic
 			const float deltaTime = pTimer->GetElapsed();
 
-			//Camera Update Logic
-			//...
+			constexpr float baseMovementSpeed{ 0.5f };
+			float movementSpeed{ baseMovementSpeed };
+			constexpr float sensitivity{ 1 / 128.f };
+
+			//Keyboard Input
+			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+			if (pKeyboardState[SDL_SCANCODE_W] || pKeyboardState[SDL_SCANCODE_UP])
+			{
+				origin += forward * movementSpeed;
+			}
+			else if (pKeyboardState[SDL_SCANCODE_S] || pKeyboardState[SDL_SCANCODE_DOWN])
+			{
+				origin -= forward * movementSpeed;
+			}
+			if (pKeyboardState[SDL_SCANCODE_D] || pKeyboardState[SDL_SCANCODE_RIGHT])
+			{
+				origin += right * movementSpeed;
+			}
+			else if (pKeyboardState[SDL_SCANCODE_A] || pKeyboardState[SDL_SCANCODE_LEFT])
+			{
+				origin -= right * movementSpeed;
+			}
+
+			//Mouse Input
+			int mouseX{}, mouseY{};
+			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
+
+			if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))
+			{
+				if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
+				{
+					origin += right * (-mouseY * movementSpeed * deltaTime);
+				}
+				else
+				{
+					origin += forward * (-mouseY * movementSpeed * deltaTime);
+				}
+			}
+
+			if (mouseState & SDL_BUTTON_RMASK)
+			{
+				forward = Matrix::CreateRotationY(mouseX * sensitivity).TransformVector(forward);
+				forward = Matrix::CreateRotationX(mouseY * sensitivity).TransformVector(forward);
+			}
 
 			//Update Matrices
 			CalculateViewMatrix();
