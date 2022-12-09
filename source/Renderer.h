@@ -11,6 +11,7 @@ struct SDL_Surface;
 
 namespace dae
 {
+	//Forward Declarations
 	class Texture;
 	struct Mesh;
 	struct Vertex;
@@ -49,7 +50,12 @@ namespace dae
 
 		float m_AspectRatio{};
 
+		Texture* m_pTexture;
+
 		//Function that transforms the vertices from the mesh from World space to Screen space
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const; //W1 Version
+
+		void RenderTriangle(const Mesh& mesh, const std::vector<Vector2>& verteciesRaster,
+			const std::vector<Vertex>& verteciesNDC, int currentVertexIndex, bool swapVertex) const;
 	};
 }

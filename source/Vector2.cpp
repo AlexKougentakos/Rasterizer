@@ -49,6 +49,17 @@ namespace dae {
 		return v1.x * v2.y - v1.y * v2.x;
 	}
 
+	//Takes into account both vector's X's and Y's and returns a new vector of the smallest ones
+	Vector2 Vector2::SmallestVectorComponents(const Vector2& v1, const Vector2& v2)
+	{
+		return { std::min(v1.x, v2.x), std::min(v1.y, v2.y) };
+	}
+
+	//Takes into account both vector's X's and Y's and returns a new vector of the biggest ones
+	Vector2 Vector2::BiggestVectorComponents(const Vector2& v1, const Vector2& v2)
+	{
+		return { std::max(v1.x, v2.x), std::max(v1.y, v2.y) };
+	}
 #pragma region Operator Overloads
 	Vector2 Vector2::operator*(float scale) const
 	{
