@@ -22,6 +22,10 @@ namespace dae
 		Vector3 origin{};
 		float fovAngle{60.f};
 		float fov{ tanf((fovAngle * TO_RADIANS) / 2.f) };
+		float aspectRatio{};
+
+		float nearPlane{ 0.1f };
+		float farPlane{ 100.f };
 
 		Vector3 forward{Vector3::UnitZ};
 		Vector3 up{Vector3::UnitY};
@@ -32,21 +36,19 @@ namespace dae
 
 		Matrix invViewMatrix{};
 		Matrix viewMatrix{};
+		Matrix projectionMatrix{};
 
-		void Initialize(float _fovAngle = 60.f, Vector3 _origin = {0.f,0.f,-10.f})
+		void Initialize(float _fovAngle = 60.f, Vector3 _origin = {0.f,0.f,-10.f}, float _aspectRatio = 1.333f)
 		{
 			fovAngle = _fovAngle;
 			fov = tanf((fovAngle * TO_RADIANS) / 2.f);
+			aspectRatio = _aspectRatio;
 
 			origin = _origin;
 		}
 
 		void CalculateViewMatrix()
 		{
-			//TODO W1
-			//ONB => invViewMatrix
-			//Inverse(ONB) => ViewMatrix
-
 			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
 			up = Vector3::Cross(forward, right);
 
@@ -66,10 +68,7 @@ namespace dae
 
 		void CalculateProjectionMatrix()
 		{
-			//TODO W2
-
-			//ProjectionMatrix => Matrix::CreatePerspectiveFovLH(...) [not implemented yet]
-			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixperspectivefovlh
+			projectionMatrix = Matrix::CreatePerspectiveFovLH(fov, aspectRatio, nearPlane, farPlane);
 		}
 
 		void Update(Timer* pTimer)
@@ -77,8 +76,7 @@ namespace dae
 			//Camera Update Logic
 			const float deltaTime = pTimer->GetElapsed();
 
-			constexpr float baseMovementSpeed{ 0.5f };
-			float movementSpeed{ baseMovementSpeed };
+			constexpr float movementSpeed{ 0.5f };
 			constexpr float sensitivity{ 1 / 128.f };
 
 			//Keyboard Input
@@ -124,7 +122,7 @@ namespace dae
 
 			//Update Matrices
 			CalculateViewMatrix();
-			CalculateProjectionMatrix(); //Try to optimize this - should only be called once or when fov/aspectRatio changes
+			CalculateProjectionMatrix();
 		}
 	};
 }

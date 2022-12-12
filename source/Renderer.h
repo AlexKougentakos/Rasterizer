@@ -33,6 +33,7 @@ namespace dae
 		void Render();
 
 		bool SaveBufferToImage() const;
+		void ToggleRenderMode();
 
 	private:
 		SDL_Window* m_pWindow{};
@@ -45,17 +46,28 @@ namespace dae
 
 		Camera m_Camera{};
 
+		Texture* m_pTexture{};
+		Mesh m_Mesh{};
+
 		int m_Width{};
 		int m_Height{};
 
 		float m_AspectRatio{};
+		
+		enum RenderingModes
+		{
+			texture,
+			boundingBox,
+			depthValues
+		};
+		RenderingModes m_CurrentRenderingMode{ texture };
 
-		Texture* m_pTexture;
 
 		//Function that transforms the vertices from the mesh from World space to Screen space
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const; //W1 Version
+		void VertexTransformationFunction(Mesh& mesh) const;
 
 		void RenderTriangle(const Mesh& mesh, const std::vector<Vector2>& verteciesRaster,
-			const std::vector<Vertex>& verteciesNDC, int currentVertexIndex, bool swapVertex) const;
+			int currentVertexIndex, bool swapVertex) const;
 	};
 }
